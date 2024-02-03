@@ -48,7 +48,7 @@
         let messageContainer = app.querySelector(".chat-screen .messages");
         if (type === "my") {
             let el = document.createElement("div");
-            el.setAttribute("class", "message my-message");
+            el.setAttribute('class', "message my-message");
             el.innerHTML = `
                 <div>
                     <div class="name">You</div>

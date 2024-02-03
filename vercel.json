@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs14.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/socket.io/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/public/:path*"
+    }
+  ]
+}
