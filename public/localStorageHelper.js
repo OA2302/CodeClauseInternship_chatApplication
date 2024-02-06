@@ -64,31 +64,6 @@
         window.location.href = window.location.href;
     });
 
-    app.querySelector(".room-screen #create-room").addEventListener("click", function() {
-        let roomName = app.querySelector("#new-room-name").value;
-        if (roomName.trim() !== "") {
-            createRoom(roomName);
-            updateRoomList();
-            app.querySelector("#new-room-name").value = "";
-        }
-    });
-
-    // Toggle between join screen, chat screen, and room screen
-    app.querySelector("#join-chat").addEventListener("click", function() {
-        app.querySelector(".join-screen").classList.remove("active");
-        app.querySelector(".chat-screen").classList.add("active");
-    });
-
-    app.querySelector("#join-room").addEventListener("click", function() {
-        app.querySelector(".join-screen").classList.remove("active");
-        app.querySelector(".room-screen").classList.add("active");
-    });
-
-    app.querySelector("#back-to-join").addEventListener("click", function() {
-        app.querySelector(".room-screen").classList.remove("active");
-        app.querySelector(".join-screen").classList.add("active");
-    });
-
     socket.on("update", function(update) {
         renderMessage("update", update);
     });
@@ -155,55 +130,3 @@
         return data ? JSON.parse(data) : null;
     }
 })();
-
-// Room management functions
-const rooms = new Map();
-
-function createRoom(roomName) {
-    rooms.set(roomName, []);
-}
-
-function getRooms() {
-    return Array.from(rooms.keys());
-}
-
-function joinRoom(roomName, username) {
-    const room = rooms.get(roomName);
-    if (room) {
-        room.push(username);
-        return true;
-    }
-    return false;
-}
-
-// Socket event handlers
-io.on("connection", function(socket) {
-    // Join a room
-    socket.on("joinRoom", function(roomName, username) {
-        if (joinRoom(roomName, username)) {
-            socket.join(roomName);
-            io.to(roomName).emit("update", `${username} joined the room`);
-        } else {
-            // Handle room not found
-        }
-    });
-
-    // Leave a room
-    socket.on("leaveRoom", function(roomName, username) {
-        const room = rooms.get(roomName);
-        if (room) {
-            const index = room.indexOf(username);
-            if (index !== -1) {
-                room.splice(index, 1);
-                io.to(roomName).emit("update", `${username} left the room`);
-                socket.leave(roomName);
-            }
-        }
-    });
-
-    // Chat in a room
-    socket.on("chatRoom", function(roomName, message) {
-        io.to(roomName).emit("chat", message);
-        // Store message in local storage for the specific room
-    });
-});
