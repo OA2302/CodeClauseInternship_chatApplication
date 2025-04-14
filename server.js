@@ -22,5 +22,6 @@ io.on("connection", function(socket) {
 });
 
 server.listen(5000, () => {
-    console.log('Server listening on port 5000');
+    console.log(`Server listening on port 5000. Copy 
+                 http://localhost:5000/`);
 });

@@ -3,32 +3,16 @@
     const socket = io();
 
     let uname;
-    let hasJoined = false;
-
-    // Load username and messages from local storage when the page loads
-    window.addEventListener('load', function() {
-        const storedUsername = localStorage.getItem('username');
-        const storedMessages = localStorage.getItem('messages');
-        
-        if (storedUsername) {
-            uname = storedUsername;
-            joinChat();
-        }
-
-        if (storedMessages) {
-            const messages = JSON.parse(storedMessages);
-            messages.forEach(message => renderMessage(message.type, message.data));
-        }
-    });
 
     app.querySelector(".join-screen #join-user").addEventListener("click", function() {
         let username = app.querySelector(".join-screen #username").value;
         if (username.length === 0) {
             return;
         }
+        socket.emit("newuser", username);
         uname = username;
-        localStorage.setItem('username', username);
-        joinChat();
+        app.querySelector(".join-screen").classList.remove("active");
+        app.querySelector(".chat-screen").classList.add("active");
     });
 
     app.querySelector(".chat-screen #send-message").addEventListener("click", function() {
@@ -44,49 +28,12 @@
             username: uname,
             text: message,
         });
-
-        // Save message to local storage
-        saveMessageToLocalStorage({
-            type: 'my',
-            data: {
-                username: uname,
-                text: message,
-            }
-        });
-
         app.querySelector(".chat-screen #message-input").value = "";
     });
 
     app.querySelector(".chat-screen #exit-chat").addEventListener("click", function() {
         socket.emit("exituser", uname);
-        localStorage.removeItem('username');
-        localStorage.removeItem('messages');
         window.location.href = window.location.href;
-    });
-
-    app.querySelector(".room-screen #create-room").addEventListener("click", function() {
-        let roomName = app.querySelector("#new-room-name").value;
-        if (roomName.trim() !== "") {
-            createRoom(roomName);
-            updateRoomList();
-            app.querySelector("#new-room-name").value = "";
-        }
-    });
-
-    // Toggle between join screen, chat screen, and room screen
-    app.querySelector("#join-chat").addEventListener("click", function() {
-        app.querySelector(".join-screen").classList.remove("active");
-        app.querySelector(".chat-screen").classList.add("active");
-    });
-
-    app.querySelector("#join-room").addEventListener("click", function() {
-        app.querySelector(".join-screen").classList.remove("active");
-        app.querySelector(".room-screen").classList.add("active");
-    });
-
-    app.querySelector("#back-to-join").addEventListener("click", function() {
-        app.querySelector(".room-screen").classList.remove("active");
-        app.querySelector(".join-screen").classList.add("active");
     });
 
     socket.on("update", function(update) {
@@ -95,31 +42,27 @@
 
     socket.on("chat", function(message) {
         renderMessage("other", message);
-
-        // Save message to local storage
-        saveMessageToLocalStorage({
-            type: 'other',
-            data: message,
-        });
     });
 
-    function joinChat() {
-        if (!hasJoined) {
-            socket.emit("newuser", uname);
-            hasJoined = true;
-        }
-        app.querySelector(".join-screen").classList.remove("active");
-        app.querySelector(".chat-screen").classList.add("active");
-    }
+    const input = document.getElementById('avatar');
+    const output = document.getElementById('output');
+
+    input.addEventListener('change', (e) =>{
+        const image  = input.file[0];
+        const imageUrl = URL.createObjectURL(image);
+        output.src = imageUrl;
+    })
+
+    const textareaValue = textarea.value.replace(/\n/g, '<br>');
 
     function renderMessage(type, message) {
         let messageContainer = app.querySelector(".chat-screen .messages");
         if (type === "my") {
             let el = document.createElement("div");
-            el.setAttribute('class', "message my-message");
+            el.setAttribute("class", "message my-message");
             el.innerHTML = `
                 <div>
-                    <div class="name">You</div>
+                    <div class="name" style="text-align: right;">You</div>
                     <div class="text">${message.text}</div>
                 </div>
             `;
@@ -143,67 +86,26 @@
 
         messageContainer.scrollTop = messageContainer.scrollHeight - messageContainer.clientHeight;
     }
-
-    function saveMessageToLocalStorage(message) {
-        let messages = loadFromLocalStorage('messages') || [];
-        messages.push(message);
-        localStorage.setItem('messages', JSON.stringify(messages));
-    }
-
-    function loadFromLocalStorage(key) {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-    }
 })();
 
-// Room management functions
-const rooms = new Map();
+// resize height for desktop
+let isResizing = false;
 
-function createRoom(roomName) {
-    rooms.set(roomName, []);
+function startDrag(e) {
+    isResizing = true;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', stopDrag);
 }
 
-function getRooms() {
-    return Array.from(rooms.keys());
-}
-
-function joinRoom(roomName, username) {
-    const room = rooms.get(roomName);
-    if (room) {
-        room.push(username);
-        return true;
+function handleMouseMove(e) {
+    if (isResizing) {
+        const newHeight = Math.min(550, window.innerWidth - e.clientX);
+        document.getElementById('con').style.width = `${newHeight}px`;
     }
-    return false;
 }
 
-// Socket event handlers
-io.on("connection", function(socket) {
-    // Join a room
-    socket.on("joinRoom", function(roomName, username) {
-        if (joinRoom(roomName, username)) {
-            socket.join(roomName);
-            io.to(roomName).emit("update", `${username} joined the room`);
-        } else {
-            // Handle room not found
-        }
-    });
-
-    // Leave a room
-    socket.on("leaveRoom", function(roomName, username) {
-        const room = rooms.get(roomName);
-        if (room) {
-            const index = room.indexOf(username);
-            if (index !== -1) {
-                room.splice(index, 1);
-                io.to(roomName).emit("update", `${username} left the room`);
-                socket.leave(roomName);
-            }
-        }
-    });
-
-    // Chat in a room
-    socket.on("chatRoom", function(roomName, message) {
-        io.to(roomName).emit("chat", message);
-        // Store message in local storage for the specific room
-    });
-});
+function stopDrag() {
+    isResizing = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', stopDrag);
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div id="video-container">
+        <video autoplay muted loop>
+            <source src="rocketNew.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div id="chat-container">
+        <div id="chat-header" onmousedown="startDrag(event)">ChatHub Bot</div>
+        <div id="chat-box"></div>
+        <div class="input">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+
+</body>
+</html>

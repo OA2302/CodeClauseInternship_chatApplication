@@ -3,31 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatApp</title>
+    <title>ChatHub</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app">
         <div class="screen join-screen active">
             <div class="form">
-                <h2>Join Chatroom</h2>
+                <h2>Join ChatHub</h2>
                 <div class="form-input">
                     <label for="username">Username</label>
                     <input type="text" id="username">
+                    <div class="form-input">
+                        <label for="avatar">Choose Display Picture</label>
+                        <input type="file" id="avatar" accept=", .jpg, .jpg, .png">
+                    </div>
                 </div>                
                 <div class="form-input">
-                    <button id="join-user">Join</button>
+                    <button id="join-user" type="button">Join</button>
+                    <p>or</p><br>
+                    <button>
+                        <a style="text-decoration: none; color: #fff;" href="./public2/index.html">
+                            Chat with Bot
+                        </a>
+                    </button>
                 </div>
+                
             </div>
         </div>
-        <div class="screen chat-screen">
+        <div class="screen chat-screen" id="con">
             <div class="header">
-                <div class="logo">Say Something</div>
+                <div class="logo">ChatHub</div>
+                <h3 style="color: #fff;">General Room</h3>
                 <button id="exit-chat">Exit</button>
             </div>
-            <div class="messages"></div>
+            <div class="messages" ></div>
             <div class="typebox">
-                <input type="text" id="message-input" placeholder="Message ...">
+                <textarea name="messages" id="message-input" placeholder="Message ..." cols="30" rows="10"></textarea>
                 <button id="send-message">Send</button>
             </div>
         </div>
